@@ -1,0 +1,49 @@
+function_sf_instance_status_raw() {
+	curl -s https://api.status.salesforce.com/v1/instances/$1/status
+}
+function_sf_instance_from_hostname() {
+	dig +short $1 | head -n1 | cut -c 1-4
+}
+function_sf_release() {
+	function_sf_instance_status_raw $1 | jq -r ".releaseVersion"
+}
+function_sf_instance_status() {
+	data="$(function_sf_instance_status_raw $1)"
+	releaseVersion=`echo $data | jq -r ".releaseVersion"`
+	active=`echo $data | jq -r ".isActive"`
+	xstatus=`echo $data | jq -r ".status"`
+	environment=`echo $data | jq -r ".environment"`
+	echo "Release Version : $releaseVersion"
+	echo "Active          : $active"
+	echo "Status          : $xstatus"
+	echo "Environment     : $environment"
+}
+function_sf_help() {
+	echo "Salesforce CLI actions:"
+	echo "-----------------------"
+	echo "- sf_status"
+	echo "  Shows status for instance ID"
+	echo "  Syntax : sf_status <instance ID>"
+	echo "  Example: sf_status na44"
+	echo ""
+	echo "- sf_release"
+	echo "  Shows release version of supplied instance ID"
+	echo "  Syntax: sf_release <instance ID>"
+	echo "  Example: sf_release na44"
+	echo ""
+	echo "- sf_instance"
+	echo "  Get instance ID from hostname"
+	echo "  Syntax: sf_instance <hostname>"
+	echo "  Example: sf_instance org62.lightning.force.com"
+	echo ""
+	echo "- sf_status_raw"
+	echo "  Shows raw JSON"
+	echo "  Syntax: sf_status_raw"
+	echo ""
+	echo "------------------------"
+}
+alias sf_help=function_sf_help
+alias sf_status_raw=function_sf_instance_status_raw
+alias sf_status=function_sf_instance_status
+alias sf_release=function_sf_release
+alias sf_instance=function_sf_instance_from_hostname
