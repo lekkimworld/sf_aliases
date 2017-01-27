@@ -5,14 +5,25 @@ function_sf_instance_from_hostname() {
 	dig +short $1 | head -n1 | cut -c 1-4
 }
 function_sf_release() {
-	function_sf_instance_status_raw $1 | jq -r ".releaseVersion"
+	if [ $# -eq 0 ]; then
+		read instance
+		raw_input="$(function_sf_instance_status_raw $instance)"
+	else
+		raw_input="$(function_sf_instance_status_raw $1)"
+	fi
+	echo $raw_input | jq -r ".releaseVersion"
 }
 function_sf_instance_status() {
-	data="$(function_sf_instance_status_raw $1)"
-	releaseVersion=`echo $data | jq -r ".releaseVersion"`
-	active=`echo $data | jq -r ".isActive"`
-	xstatus=`echo $data | jq -r ".status"`
-	environment=`echo $data | jq -r ".environment"`
+	if [ $# -eq 0 ]; then
+		read instance
+		raw_input="$(function_sf_instance_status_raw $instance)"
+	else
+		raw_input="$(function_sf_instance_status_raw $1)"
+	fi
+	releaseVersion=`echo $raw_input | jq -r ".releaseVersion"`
+	active=`echo $raw_input | jq -r ".isActive"`
+	xstatus=`echo $raw_input | jq -r ".status"`
+	environment=`echo $raw_input | jq -r ".environment"`
 	echo "Release Version : $releaseVersion"
 	echo "Active          : $active"
 	echo "Status          : $xstatus"
